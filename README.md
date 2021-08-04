@@ -3,8 +3,9 @@ Roach is a ESCPOS server to be used when a device cannot connect to an ESCPOS pr
 
 - Install Roach on a Raspberry Pi or other SBC
 - Connect the printer via USB
-- Roach communicates via serial to the printer (change port in config).
+- Roach communicates via USB to the printer (change your printer's vid and pid in config).
 - Communicate via HTTP requests to the printer with Roach.
+- Config file is created at first startup.
 
 ## Why was this made?
 I needed to communicate with a receipt printer for a react-native project, but while using Expo I could not communicate either via USB or network sockets, so I needed a middleman.

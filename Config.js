@@ -4,7 +4,10 @@ const path = require('path');
 
 var def = {
 	port: 3000,
-	serialport: ''
+	usb: {
+		vid: 0,
+		pid: 0
+	}
 }
 
 var loc = path.join(__dirname, 'config.json');

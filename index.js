@@ -3,16 +3,13 @@ var bodyParser = require('body-parser');
 const Config = require('./Config');
 
 const escpos = require('escpos');
-escpos.Serial = require('escpos-serialport');
-
-const device = new escpos.Serial(Config.serialport);
-const printer = new escpos.Printer(device);
+escpos.USB = require('escpos-usb');
 
 var app = express();
 app.use(bodyParser.json())
 app.listen(Config.port);
 
-async function sendCommand(cmd, args){
+async function sendCommand(printer, cmd, args){
 	return new Promise((resolve, reject)=>{
 		if(cmd=='qrimage'){
 			printer.qrimage(args[0], function(err, printer){
@@ -33,6 +30,12 @@ app.all('/', (req, res)=>{
 	var { opts } = req.body;
 	if(!Array.isArray(opts)) return res.send({ error: true, message: 'Options must be an array' });
 	else if(opts.length==0) return res.send({ error: false });
+	if(opts[opts.length-1][0]!='close'){
+		return res.send({ error: true, message: 'Printer must close at the end.' })
+	}
+	
+	const device = new escpos.USB(Config.usb.vid, Config.usb.pid);
+	const printer = new escpos.Printer(device);
 	device.open(async err=>{
 		if(err) return res.send({ error: true, message: 'Error opening device.' });
 		var hasFlushed = false;
@@ -42,10 +45,10 @@ app.all('/', (req, res)=>{
 				if(typeof cmd !== 'string') continue;
 				if(cmd=='flush' || cmd=='close') hasFlushed = true;
 				else hasFlushed = false;
-				await sendCommand(cmd, args);
+				await sendCommand(printer, cmd, args);
 			}
 		}catch(err){}
-		printer.close(function(err){});
+		device.close(()=>{});
 		return res.send({ error: false });
 	})
 })
